@@ -141,7 +141,7 @@ def _handle_record(client, channel, user_name, rest):
         table.add_row([opponent, results['win'] + results['loss'] + results['draw'],
                        results['win'], results['loss'], results['draw']])
     table_string = table.get_string(sortby='Games', reversesort=True)
-    client.rtm_send_message(channel, '```\n{}```'.format(table_string))
+    client.rtm_send_message(channel, 'Record for *{}*\n```\n{}```'.format(user_name, table_string))
 
 def _handle_leaderboard(client, channel, user_name, rest):
     """Show the overall W/L/D for all players."""
