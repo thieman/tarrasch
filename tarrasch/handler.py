@@ -133,7 +133,21 @@ def _handle_record(client, channel, user_name, rest):
 
 def _handle_leaderboard(client, channel, user_name, rest):
     """Show the overall W/L/D for all players."""
-    pass
+    table = PrettyTable(['Player', 'Games', 'Wins', 'Losses', 'Draws'])
+    for player in db.smembers('players'):
+        record = db.get(player)
+        if not record:
+            continue
+        record = json.loads(str(record))
+        wins, losses, draws = 0, 0, 0
+        for opponent, results in record.iteritems():
+            wins += results['win']
+            losses += results['loss']
+            draws += results['draw']
+        table.add_row([player, wins + losses + draws,
+                       wins, losses, draws])
+    table_string = table.get_string(sortby='Wins', reversesort=True)
+    client.rtm_send_message(channel, '```\n{}```'.format(table_string))
 
 def _handle_help(client, channel, user_name, rest):
     pass
