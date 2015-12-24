@@ -143,6 +143,8 @@ def _handle_record(client, channel, user_name, rest):
 def _handle_leaderboard(client, channel, user_name, rest):
     """Show the overall W/L/D for all players."""
     table = PrettyTable(['Player', 'Games', 'Wins', 'Losses', 'Draws'])
+    if db.scard('players') == 0:
+        return client.rtm_send_message(channel, 'No games have been recorded.')
     for player in db.smembers('players'):
         record = db.get(player)
         if not record:
