@@ -26,6 +26,7 @@ def _start_game(client, channel, white_user, black_user):
     _render(client, channel, board=board)
 
 def _handle_claim(client, channel, user_name, rest):
+    """Claim a side in the next game. Used after a start command."""
     if channel not in STARTUP_STATE:
         return client.rtm_send_message(channel, 'Say `{} start` to start a new game.'.format(MP))
     if not rest or rest[0].lower() not in ['white', 'black']:
@@ -52,14 +53,17 @@ def _handle_start(client, channel, user_name, rest):
     client.rtm_send_message(channel, "Let's play chess! I need two players to say `{0} claim white` or `{0} claim black`.".format(MP))
 
 def _handle_quit(client, channel, user_name, rest):
+    """Quit the current game in this channel."""
     board = TarraschBoard.from_backend(channel)
     client.rtm_send_message(channel, 'Ending the game between {} and {}.'.format(board.white_user, board.black_user))
     board.kill()
 
 def _handle_board(client, channel, user_name, rest):
+    """Show the current board state for the game in this channel."""
     _render(client, channel)
 
 def _handle_move(client, channel, user_name, rest):
+    """Make a new move. Use algebraic notation, e.g. `move Nc3`"""
     board = TarraschBoard.from_backend(channel)
     if user_name != board.current_turn_username: # not this person's turn
         return
@@ -77,6 +81,7 @@ def _handle_move(client, channel, user_name, rest):
         _handle_game_over(client, channel, board)
 
 def _handle_takeback(client, channel, user_name, rest):
+    """Take back the last move. Can only be done by the current player."""
     board = TarraschBoard.from_backend(channel)
     if user_name != board.current_turn_username:
         return client.rtm_send_message(channel, 'Only the current player, *{}*, can take back the last move.'.format(board.current_turn_username))
@@ -150,7 +155,13 @@ def _handle_leaderboard(client, channel, user_name, rest):
     client.rtm_send_message(channel, '```\n{}```'.format(table_string))
 
 def _handle_help(client, channel, user_name, rest):
-    pass
+    help_string = ""
+    for command in sorted(COMMANDS.keys()):
+        if command == 'help':
+            continue
+        help_string += '{}: {}\n'.format(command, COMMANDS[command].__doc__)
+    help_string += '\nYou can read all about algebraic notation here: https://goo.gl/OOquFQ\n'
+    client.rtm_send_message(channel, help_string)
 
 def handle_message(client, channel, user_name, message):
     words = map(lambda word: word.strip(), message.split())
