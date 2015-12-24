@@ -18,7 +18,10 @@ def _render(client, channel, board=None):
     color = 'white' if board.turn else 'black'
     user = board.white_user if color == 'white' else board.black_user
     if not board.is_game_over():
-        client.rtm_send_message(channel, '*{}* ({}) to play.'.format(user, color))
+        message = '*{}* ({}) to play.'.format(user, color)
+        if board.is_check():
+            message += ' Check.'
+        client.rtm_send_message(channel, message)
 
 def _start_game(client, channel, white_user, black_user):
     board = TarraschBoard(channel, white_user, black_user)
