@@ -17,11 +17,10 @@ def _ensure_cached_user_info(client, event):
 
 def _route_event(client, event):
     _ensure_cached_user_info(client, event)
-    if event.get('type') == 'message' and 'subtype' not in event:
-        print event
-        if event.get('text').startswith(MESSAGE_PREFIX):
+    if event.get('type') == 'message' and 'subtype' not in event and 'text' in event:
+        if event['text'].lower().startswith(MESSAGE_PREFIX.lower()):
             channel = event['channel']
-            message = event['text'].lstrip(MESSAGE_PREFIX).strip()
+            message = event['text'][len(MESSAGE_PREFIX):].strip()
             user_name = USER_CACHE[event['user']]['name']
             if message:
                 handle_message(client, channel, user_name, message)
