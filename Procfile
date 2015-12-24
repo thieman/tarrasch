@@ -1,1 +1,1 @@
-web: python -m tarrasch
+bot: python -m tarrasch
