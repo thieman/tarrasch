@@ -1,3 +1,4 @@
 python-chess==0.13.1
 slackclient==0.16.0
 redis==2.10.5
+prettytable==0.7.2

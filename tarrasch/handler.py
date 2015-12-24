@@ -1,8 +1,13 @@
+import json
+
+from prettytable import PrettyTable
+
 from .board import TarraschBoard, TarraschNoBoardException
 from .config import MESSAGE_PREFIX as MP
+from .database import singleton as db
 
 # Used to get a game going, since we require multiple user
-# inputs to do this we need to save some state in-memory
+# inputs to do this we need to save some state in memory
 # between those inputs
 STARTUP_STATE = {}
 
@@ -12,7 +17,8 @@ def _render(client, channel, board=None):
     client.rtm_send_message(channel, board.get_url())
     color = 'white' if board.turn else 'black'
     user = board.white_user if color == 'white' else board.black_user
-    client.rtm_send_message(channel, '*{}* ({}) to play.'.format(user, color))
+    if not board.is_game_over():
+        client.rtm_send_message(channel, '*{}* ({}) to play.'.format(user, color))
 
 def _start_game(client, channel, white_user, black_user):
     board = TarraschBoard(channel, white_user, black_user)
@@ -43,7 +49,7 @@ def _handle_start(client, channel, user_name, rest):
     if board:
         return client.rtm_send_message(channel, 'A game is already going on in this channel between {} and {}'.format(board.white_user, board.black_user))
     STARTUP_STATE[channel] = {}
-    client.rtm_send_message(channel, "Let's start a new game! I need two players to say `{0} claim white` or `{0} claim black`.".format(MP))
+    client.rtm_send_message(channel, "Let's play chess! I need two players to say `{0} claim white` or `{0} claim black`.".format(MP))
 
 def _handle_quit(client, channel, user_name, rest):
     board = TarraschBoard.from_backend(channel)
@@ -66,10 +72,9 @@ def _handle_move(client, channel, user_name, rest):
     except ValueError:
         return client.rtm_send_message(channel, 'This move is illegal.')
     board.save()
+    _render(client, channel, board=board)
     if board.is_game_over():
-        _handle_game_over(client, channel)
-    else:
-        _render(client, channel, board=board)
+        _handle_game_over(client, channel, board)
 
 def _handle_takeback(client, channel, user_name, rest):
     board = TarraschBoard.from_backend(channel)
@@ -79,13 +84,55 @@ def _handle_takeback(client, channel, user_name, rest):
     board.save()
     _render(client, channel, board=board)
 
-def _handle_game_over(client, channel):
-    pass
+def _handle_game_over(client, channel, board):
+    if board.result() == '1-0':
+        result = 'win'
+    elif board.result() == '0-1':
+        result = 'loss'
+    elif board.result() == '*':
+        raise ValueError('Result undetermined in game over handler, should not have gotten here')
+    else:
+        result = 'draw'
+    _update_records(board.white_user, board.black_user, result)
+    board.kill()
+    if result != 'draw':
+        winner = board.white_user if result == 'win' else board.black_user
+        client.rtm_send_message(channel, '*{}* wins! Say `{} start` to play another game.'.format(winner, MP))
+    else:
+        client.rtm_send_message(channel, "It's a draw! Say `{} start` to play another game.".format(MP))
+
+def _update_records(white_user, black_user, result):
+    white_result = 'win' if result == 'win' else 'loss'
+    black_result = 'loss' if result == 'win' else 'win'
+    if result == 'draw':
+        white_result, black_result = 'draw', 'draw'
+    _update_record(white_user, black_user, white_result)
+    _update_record(black_user, white_user, black_result)
+    db.sadd('players', white_user)
+    db.sadd('players', black_user)
+
+def _update_record(user, against, result):
+    record = json.loads(str(db.get(user) or {}))
+    if against not in record:
+        record[against] = {'win': 0, 'loss': 0, 'draw': 0}
+    record[against][result] += 1
+    db.set(user, json.dumps(record))
 
 def _handle_record(client, channel, user_name, rest):
-    pass
+    """Show your record against each of your opponents."""
+    record = db.get(user_name)
+    if not record:
+        return client.rtm_send_message(channel, 'User *{}* has not played any games.'.format(user_name))
+    record = json.loads(str(record))
+    table = PrettyTable(['Opponent', 'Games', 'Wins', 'Losses', 'Draws'])
+    for opponent, results in record.iteritems():
+        table.add_row([opponent, results['win'] + results['loss'] + results['draw'],
+                       results['win'], results['loss'], results['draw']])
+    table_string = table.get_string(sortby='Games', reversesort=True)
+    client.rtm_send_message(channel, '```\n{}```'.format(table_string))
 
 def _handle_leaderboard(client, channel, user_name, rest):
+    """Show the overall W/L/D for all players."""
     pass
 
 def _handle_help(client, channel, user_name, rest):
