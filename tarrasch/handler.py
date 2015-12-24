@@ -52,12 +52,6 @@ def _handle_start(client, channel, user_name, rest):
     STARTUP_STATE[channel] = {}
     client.rtm_send_message(channel, "Let's play chess! I need two players to say `{0} claim white` or `{0} claim black`.".format(MP))
 
-def _handle_quit(client, channel, user_name, rest):
-    """Quit the current game in this channel."""
-    board = TarraschBoard.from_backend(channel)
-    client.rtm_send_message(channel, 'Ending the game between {} and {}.'.format(board.white_user, board.black_user))
-    board.kill()
-
 def _handle_board(client, channel, user_name, rest):
     """Show the current board state for the game in this channel."""
     _render(client, channel)
@@ -89,20 +83,30 @@ def _handle_takeback(client, channel, user_name, rest):
     board.save()
     _render(client, channel, board=board)
 
-def _handle_game_over(client, channel, board):
-    if board.result() == '1-0':
-        result = 'win'
-    elif board.result() == '0-1':
-        result = 'loss'
-    elif board.result() == '*':
-        raise ValueError('Result undetermined in game over handler, should not have gotten here')
+def _handle_forfeit(client, channel, user_name, rest):
+    """Forfeit the current game."""
+    board = TarraschBoard.from_backend(channel)
+    if board.turn:
+        _handle_game_over(client, channel, board, 'loss')
     else:
-        result = 'draw'
+        _handle_game_over(client, channel, board, 'win')
+
+def _handle_game_over(client, channel, board, result=None):
+    if not result:
+        if board.result() == '1-0':
+            result = 'win'
+        elif board.result() == '0-1':
+            result = 'loss'
+        elif board.result() == '*':
+            raise ValueError('Result undetermined in game over handler, should not have gotten here')
+        else:
+            result = 'draw'
     _update_records(board.white_user, board.black_user, result)
     board.kill()
     if result != 'draw':
         winner = board.white_user if result == 'win' else board.black_user
-        client.rtm_send_message(channel, '*{}* wins! Say `{} start` to play another game.'.format(winner, MP))
+        color = 'white' if result == 'win' else 'black'
+        client.rtm_send_message(channel, '*{}* ({}) wins! Say `{} start` to play another game.'.format(winner, color, MP))
     else:
         client.rtm_send_message(channel, "It's a draw! Say `{} start` to play another game.".format(MP))
 
@@ -175,10 +179,10 @@ def handle_message(client, channel, user_name, message):
 COMMANDS = {
     'start': _handle_start,
     'claim': _handle_claim,
-    'quit': _handle_quit,
     'board': _handle_board,
     'move': _handle_move,
     'takeback': _handle_takeback,
+    'forfeit': _handle_forfeit,
     'record': _handle_record,
     'leaderboard': _handle_leaderboard,
     'help': _handle_help,
