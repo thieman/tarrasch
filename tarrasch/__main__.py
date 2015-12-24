@@ -35,7 +35,7 @@ def main():
                 for event in events:
                     _route_event(client, event)
             else:
-                time.sleep(1)
+                time.sleep(0.5)
     else:
         raise IOError('Connection to Slack failed, check your token')
 
