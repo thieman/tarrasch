@@ -62,12 +62,12 @@ def _handle_board(client, channel, user_name, rest):
 
 def _humanize(seconds):
     if seconds < 120:
-        return '{} seconds'.format(int(seconds))
+        return '{} seconds'.format(int(round(seconds)))
     elif seconds < 60*60*2:
-        return '{} minutes'.format(int(seconds/60))
+        return '{} minutes'.format(int(round(seconds/60)))
     elif seconds < 60*60*24:
-        return '{} hours'.format(int(seconds/(60*60)))
-    return '{} days'.format(int(seconds/(60*60*24)))
+        return '{} hours'.format(int(round(seconds/(60*60))))
+    return '{} days'.format(int(round(seconds/(60*60*24))))
 
 def _handle_move(client, channel, user_name, rest):
     """Make a new move. Use algebraic notation, e.g. `move Nc3`"""
