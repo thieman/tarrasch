@@ -117,7 +117,8 @@ def _handle_game_over(client, channel, board, result=None):
             raise ValueError('Result undetermined in game over handler, should not have gotten here')
         else:
             result = 'draw'
-    _update_records(board.white_user, board.black_user, result)
+    if board.white_user != board.black_user:
+        _update_records(board.white_user, board.black_user, result)
     board.kill()
     if result != 'draw':
         winner = board.white_user if result == 'win' else board.black_user
