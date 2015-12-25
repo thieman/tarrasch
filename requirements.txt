@@ -2,3 +2,4 @@ python-chess==0.13.1
 thieman-slackclient==0.16.1
 redis==2.10.5
 prettytable==0.7.2
+requests==2.9.1

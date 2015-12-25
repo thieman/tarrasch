@@ -6,6 +6,7 @@ from prettytable import PrettyTable
 from .board import TarraschBoard, TarraschNoBoardException
 from .config import MESSAGE_PREFIX as MP, COOLDOWN_SECONDS
 from .database import singleton as db
+from .analysis import upload_analysis
 
 # Used to get a game going, since we require multiple user
 # inputs to do this we need to save some state in memory
@@ -119,6 +120,15 @@ def _handle_game_over(client, channel, board, result=None):
             result = 'draw'
     if board.white_user != board.black_user:
         _update_records(board.white_user, board.black_user, result)
+
+    # Upload game for analysis
+    try:
+        url = upload_analysis(board.get_pgn())
+        message = 'This game is available for analysis at {}'.format(url)
+    except Exception as e:
+        message = 'There was a problem uploading the game for analysis, sorry :anguished:'
+    client.rtm_send_message(channel, message)
+
     board.kill()
     if result != 'draw':
         winner = board.white_user if result == 'win' else board.black_user

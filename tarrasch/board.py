@@ -2,7 +2,7 @@ import json
 import random
 import cPickle
 
-from chess import Board, SQUARES_180
+from chess import Board, SQUARES_180, pgn
 
 from .database import singleton as db
 
@@ -79,3 +79,17 @@ class TarraschBoard(Board):
     @property
     def current_turn_username(self):
         return self.white_user if self.turn else self.black_user
+
+    def get_pgn(self):
+        """Returns a string representing the PGN for the current board state (and
+        the moves leading up to it)."""
+        root = pgn.Game()
+        root.headers['Event'] = 'Tarrasch Chess Bot'
+        root.headers['White'] = self.white_user
+        root.headers['Black'] = self.black_user
+
+        next = root
+        for move in self.move_stack:
+            next = next.add_main_variation(move)
+
+        return root.__str__()

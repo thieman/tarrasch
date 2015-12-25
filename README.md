@@ -2,7 +2,7 @@
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
-A Chess bot for Slack. Uses a fully-functional chess engine, graphical boards (none of that low-budget ASCII stuff), and keeps track of your record against your friends and coworkers.
+A Chess bot for Slack. Uses a fully-functional chess engine, graphical boards (none of that low-budget ASCII stuff), keeps track of your record against your friends and coworkers, and automatically uploads each game to lichess.org for analysis.
 
 ![](http://i.imgur.com/cDPLZl1.png)
 
@@ -15,6 +15,7 @@ A Chess bot for Slack. Uses a fully-functional chess engine, graphical boards (n
 3. Keeps track of personal and org-wide records against each opponent
 4. Lets you undo moves for when your friends screw up algebraic notation
 5. Optional waiting period between moves to force you to get some amount of work done
+6. Uploads each game to lichess.org for analysis [(sample)](http://en.lichess.org/9SGIekDg)
 
 ### Configuration
 
