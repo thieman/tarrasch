@@ -71,7 +71,7 @@ class TarraschBoard(Board):
             else:
                 render_string += '-'
         # We add some noise at the end to force Slack to render our shit
-        return 'http://www.jinchess.com/chessboard/?s=s&p={}#{}'.format(render_string, random.randint(0, 10000000))
+        return 'http://www.jinchess.com/chessboard/?s=s&cm=o&p={}#{}'.format(render_string, random.randint(0, 10000000))
 
     @property
     def current_turn_username(self):
