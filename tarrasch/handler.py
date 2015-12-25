@@ -1,6 +1,7 @@
 import time
 import json
 
+from chess import SQUARE_NAMES
 from prettytable import PrettyTable
 
 from .board import TarraschBoard, TarraschNoBoardException
@@ -20,7 +21,12 @@ def _render(client, channel, board=None):
     color = 'white' if board.turn else 'black'
     user = board.white_user if color == 'white' else board.black_user
     if not board.is_game_over():
-        message = '*{}* ({}) to play.'.format(user, color)
+        message = ''
+        if board.move_stack:
+            last_move = board.move_stack[-1]
+            from_square, to_square = SQUARE_NAMES[last_move.from_square], SQUARE_NAMES[last_move.to_square]
+            message += 'Last move: {} => {}. '.format(from_square, to_square)
+        message += '*{}* ({}) to play.'.format(user, color)
         if board.is_check():
             message += ' Check.'
         client.rtm_send_message(channel, message)
