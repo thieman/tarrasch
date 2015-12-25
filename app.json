@@ -1,0 +1,13 @@
+{
+    "name": "Tarrasch Chess Bot",
+    "description": "A chess bot for Slack",
+    "repository": "https://github.com/thieman/tarrasch",
+    "logo": "http://i.imgur.com/UZce3wX.png",
+    "keywords": ["chess", "slack", "python"],
+    "addons": ["heroku-redis:hobby-dev"],
+    "env": {
+        "TARRASCH_SLACK_TOKEN": {
+            "description": "The API token for your new bot. You can get this from the Custom Integrations section on Slack's website."
+        }
+    }
+}
