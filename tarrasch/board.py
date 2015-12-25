@@ -1,6 +1,7 @@
 import json
 import random
 import cPickle
+import datetime
 
 from chess import Board, SQUARES_180, pgn
 
@@ -85,6 +86,7 @@ class TarraschBoard(Board):
         the moves leading up to it)."""
         root = pgn.Game()
         root.headers['Event'] = 'Tarrasch Chess Bot'
+        root.headers['Date'] = datetime.datetime.utcnow().strftime('%Y.%m.%d')
         root.headers['White'] = self.white_user
         root.headers['Black'] = self.black_user
 
