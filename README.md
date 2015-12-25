@@ -17,6 +17,10 @@ A Chess bot for Slack. Uses a fully-functional chess engine, graphical boards (n
 5. Optional waiting period between moves to force you to get some amount of work done
 6. Uploads each game to lichess.org for analysis [(sample)](http://en.lichess.org/9SGIekDg)
 
+### Installation
+
+Basic setup requires a Slack bot token. A Redis instance is also required, which is set up for you if you're running on Heroku. Once the bot is online, enter a channel with it and say `chess help` to see the command list.
+
 ### Configuration
 
 Tarrasch is configured through environment variables.
