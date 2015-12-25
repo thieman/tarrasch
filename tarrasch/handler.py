@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import time
 import json
 
@@ -25,7 +27,7 @@ def _render(client, channel, board=None):
         if board.move_stack:
             last_move = board.move_stack[-1]
             from_square, to_square = SQUARE_NAMES[last_move.from_square], SQUARE_NAMES[last_move.to_square]
-            message += 'Last move: {} => {}. '.format(from_square, to_square)
+            message += 'Last move: {} → {}. '.format(from_square, to_square)
         message += '*{}* ({}) to play.'.format(user, color)
         if board.is_check():
             message += ' Check.'
