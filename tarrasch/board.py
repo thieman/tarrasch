@@ -20,6 +20,7 @@ class TarraschBoard(Board):
         self.channel = channel
         self.white_user = white_user
         self.black_user = black_user
+        self.last_move_time = 0
 
     @classmethod
     def from_backend(cls, channel):
@@ -30,6 +31,7 @@ class TarraschBoard(Board):
             raise TarraschNoBoardException('No board found for channel {}'.format(channel))
         payload = json.loads(record)
         board = cls(channel, payload['white_user'], payload['black_user'])
+        board.last_move_time = payload.get('last_move_time', 0)
         # Restore board positions from FEN
         board.set_fen(payload['fen'])
         # Restore state variables
@@ -44,10 +46,11 @@ class TarraschBoard(Board):
         board.transpositions = cPickle.loads(str(payload['transpositions']))
         return board
 
-    def save(self):
+    def save(self, last_move_time=None):
         payload = {'fen': self.fen(),
                    'white_user': self.white_user,
                    'black_user': self.black_user,
+                   'last_move_time': last_move_time or self.last_move_time,
                    'stacks': {'move': cPickle.dumps(self.move_stack),
                               'halfmove_clock': cPickle.dumps(self.halfmove_clock_stack),
                               'captured_piece': cPickle.dumps(self.captured_piece_stack),

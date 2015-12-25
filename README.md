@@ -14,6 +14,16 @@ A Chess bot for Slack. Uses a fully-functional chess engine, graphical boards (n
 2. Graphical boards courtesy of jinchess.com
 3. Keeps track of personal and org-wide records against each opponent
 4. Lets you undo moves for when your friends screw up algebraic notation
+5. Optional waiting period between moves to force you to get some amount of work done
+
+### Configuration
+
+Tarrasch is configured through environment variables.
+
+* `TARRASCH_MESSAGE_PREFIX`: Set the word Tarrasch listens for at the beginning of your messages to know you're talking to it. Default: `chess`.
+* `TARRASCH_COOLDOWN_SECONDS`: Number of seconds to wait after each move before accepting another move. Default: `0`.
+
+There are also various `TARRASCH_REDIS_*` variables for configuring the Redis connection, but if you're deployed on Heroku this should Just Work™.
 
 #### Interaction Model
 

@@ -1,9 +1,10 @@
+import time
 import json
 
 from prettytable import PrettyTable
 
 from .board import TarraschBoard, TarraschNoBoardException
-from .config import MESSAGE_PREFIX as MP
+from .config import MESSAGE_PREFIX as MP, COOLDOWN_SECONDS
 from .database import singleton as db
 
 # Used to get a game going, since we require multiple user
@@ -64,15 +65,18 @@ def _handle_move(client, channel, user_name, rest):
     board = TarraschBoard.from_backend(channel)
     if user_name != board.current_turn_username: # not this person's turn
         return
-
     if not rest:
         return
+    time_until_can_move = COOLDOWN_SECONDS - (time.time() - board.last_move_time)
+    if time_until_can_move > 1:
+        return client.rtm_send_message(channel, 'You must wait {} more seconds to make a move.'.format(int(time_until_can_move)))
+
     move = rest[0]
     try:
         board.push_san(move)
     except ValueError:
         return client.rtm_send_message(channel, 'This move is illegal.')
-    board.save()
+    board.save(last_move_time=time.time())
     _render(client, channel, board=board)
     if board.is_game_over():
         _handle_game_over(client, channel, board)
