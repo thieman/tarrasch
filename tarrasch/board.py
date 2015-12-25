@@ -6,6 +6,7 @@ import datetime
 from chess import Board, SQUARES_180, pgn
 
 from .database import singleton as db
+from .shortener import shorten_url
 
 class TarraschNoBoardException(Exception):
     pass
@@ -66,7 +67,7 @@ class TarraschBoard(Board):
     def kill(self):
         db.delete(self.channel)
 
-    def get_url(self):
+    def get_url(self, shorten=False):
         render_string = ''
         for square in SQUARES_180:
             piece = self.piece_at(square)
@@ -75,7 +76,10 @@ class TarraschBoard(Board):
             else:
                 render_string += '-'
         # We add some noise at the end to force Slack to render our shit
-        return 'http://www.jinchess.com/chessboard/?s=s&cm=r&ps=alpha-flat&p={}#{}'.format(render_string, random.randint(0, 10000000))
+        url = 'http://www.jinchess.com/chessboard/?s=s&cm=r&ps=alpha-flat&p={}#{}'.format(render_string, random.randint(0, 10000000))
+        if shorten:
+            url = shorten_url(url)
+        return url
 
     @property
     def current_turn_username(self):

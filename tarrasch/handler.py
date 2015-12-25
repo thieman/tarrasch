@@ -16,7 +16,7 @@ STARTUP_STATE = {}
 def _render(client, channel, board=None):
     if not board:
         board = TarraschBoard.from_backend(channel)
-    client.rtm_send_message(channel, board.get_url())
+    client.rtm_send_message(channel, board.get_url(shorten=True))
     color = 'white' if board.turn else 'black'
     user = board.white_user if color == 'white' else board.black_user
     if not board.is_game_over():
