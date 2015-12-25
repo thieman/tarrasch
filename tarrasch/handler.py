@@ -60,6 +60,15 @@ def _handle_board(client, channel, user_name, rest):
     """Show the current board state for the game in this channel."""
     _render(client, channel)
 
+def _humanize(seconds):
+    if seconds < 120:
+        return '{} seconds'.format(int(seconds))
+    elif seconds < 60*60*2:
+        return '{} minutes'.format(int(seconds/60))
+    elif seconds < 60*60*24:
+        return '{} hours'.format(int(seconds/(60*60)))
+    return '{} days'.format(int(seconds/(60*60*24)))
+
 def _handle_move(client, channel, user_name, rest):
     """Make a new move. Use algebraic notation, e.g. `move Nc3`"""
     board = TarraschBoard.from_backend(channel)
@@ -69,7 +78,7 @@ def _handle_move(client, channel, user_name, rest):
         return
     time_until_can_move = COOLDOWN_SECONDS - (time.time() - board.last_move_time)
     if time_until_can_move > 1:
-        return client.rtm_send_message(channel, 'You must wait {} more seconds to make a move.'.format(int(time_until_can_move)))
+        return client.rtm_send_message(channel, 'You must wait {} to make a move.'.format(_humanize(time_until_can_move)))
 
     move = rest[0]
     try:
